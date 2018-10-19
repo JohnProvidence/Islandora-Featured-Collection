@@ -1,0 +1,137 @@
+<?php
+
+
+
+/**
+* Implements hook_block_info()
+*/
+
+function pld_featured_objects_block_info() {
+	$blocks['pld_featured_objects'] = array(
+		'info' => t('Prov Lib Digital Featured Objects')
+	);
+
+	return $blocks;
+}
+
+/**
+* Implements hook_block_configure().
+*/
+
+function pld_featured_objects_block_configure($delta = '') {
+
+	$user = user_load(1);
+
+	$connection = islandora_get_tuque_connection($user);
+
+	$repository = $connection->repository;
+
+	$ri = $repository->ri;
+
+	$cmodel = 'islandora:collectionCModel';
+
+	$query = <<<EOQ
+		SELECT ?pid ?label
+		FROM <#ri>
+		WHERE {
+		?pid <fedora-model:label> ?label ;
+		<fedora-model:hasModel> <info:fedora/$cmodel>
+		}
+EOQ;
+
+	$results = $repository->ri->sparqlQuery($query);
+
+	$collections = array();
+
+	foreach($results as $r) {
+		$pid = $r['pid']['value'];
+		$name = $r['label']['value'];
+		if($pid != 'islandora:root') {
+			$collections[$pid] = $name;
+		}
+	}
+	
+	$form = array();
+
+	if($delta == 'pld_featured_objects') {
+		$form['pld_featured_objects'] = array(
+			'#type' => 'fieldset',
+			'#title' => 'Prov Lib Digital Featured Objects Options',
+		);
+		$form['pld_featured_objects']['pld_selected_collections'] = array(
+			'#type' => 'checkboxes',
+			'#options' => t($collections),
+			'#title' => t('Select collections that you would like to feature on the homepage'),
+			'#default_value' => array(variable_get('pld_selected_collections')),
+		);
+
+	}
+
+	return $form;
+}
+
+/**
+* Implements hook_block_save().
+*/
+
+function pld_featured_objects_block_save($delta = '', $edit = array() ) {
+	if( $delta == 'pld_featured_objects') {
+		variable_set('pld_selected_collections', array($edit['pld_selected_collections']));
+	}
+}
+
+/**
+* Implements hook_block_view().
+*/
+
+function pld_featured_objects_block_view($delta = '') {
+	
+	if($delta == 'pld_featured_objects') {
+		// get selected collections from pld_featured_objects block
+		$selected = variable_get('pld_selected_collections');
+	}
+	$selected = $selected[0];
+
+	// grab random collection from selected collection array
+	$pid = array_rand($selected);
+
+	//echo $pid;
+	// connect to Fedora Repository
+
+	$user = user_load(1);
+
+	$connection = islandora_get_tuque_connection($user);
+
+	$repository = $connection->repository;
+
+	//var_dump($repository);
+
+	$ri = $repository->ri;
+
+	$query = <<<EOQ
+		PREFIX fedora: <info:fedora/fedora-system:def/relations-external#>
+		SELECT ?pid ?label
+		FROM <#ri>
+		WHERE {
+			?pid fedora:isMemberOfCollection <info:fedora/$pid> ;
+			<fedora-model:label> ?label ;
+		}
+EOQ;
+
+	$results = $ri->sparqlQuery($query);
+
+	//var_dump($results);
+
+	foreach($results as $r) {
+		$pid = $r['pid']['value'];
+		$title = $r['label']['value'];
+		$obj_dsid = '/islandora/object/'.$pid.'/datastream/OBJ/view';
+		$obj_title = $title;
+
+		echo $obj_title .' - ' .'<div><img src="'.$obj_dsid.'" alt="'.$obj_title.'" /></div><hr><br>';
+	}
+
+}
+
+
+?>

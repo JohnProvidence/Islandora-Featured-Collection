@@ -86,6 +86,10 @@ function pld_featured_objects_block_save($delta = '', $edit = array() ) {
 
 function pld_featured_objects_block_view($delta = '') {
 	
+	module_load_include('inc', 'islandora', 'includes/datastream');
+  	module_load_include('inc', 'islandora', 'includes/utilities');
+ 	module_load_include('inc', 'islandora', 'includes/metadata');
+
 	if($delta == 'pld_featured_objects') {
 		// get selected collections from pld_featured_objects block
 		$selected = variable_get('pld_selected_collections');
@@ -124,11 +128,34 @@ EOQ;
 
 	for($i = 0; $i < count($results); $i++ ) {
 		$pid = $results[$i]['pid']['value'];
+
+		$object = islandora_object_load($pid);
+
+		echo $object->label;
+
+		$parent = $object->getParents();
+
+		$parent_pid = $parent[0];
+
+		$parent_object = islandora_object_load($parent_pid);
+
+		$img_dsid = 'OBJ';
+
+		$img_dsid = $object->getDatastream($img_dsid);
+
 		$title = $results[$i]['label']['value'];
 		$obj_dsid = '/islandora/object/'.$pid.'/datastream/OBJ/view';
 		$obj_title = $title;
 
-		//echo $obj_title .' - ' .'<div><img src="'.$obj_dsid.'" alt="'.$obj_title.'" /></div><hr><br>';
+		if($img_dsid != FALSE) {
+		echo $obj_title .' - ' .'<div><img src="'.$obj_dsid.'" alt="'.$obj_title.'" /></div><hr><br>';
+		}
+
+		$parent_label = $parent_object->label;
+
+		echo 'In collection: ' . $parent_label;
+		
+		echo '<br><br><hr>';
 	}
 
 }

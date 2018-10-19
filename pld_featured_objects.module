@@ -122,13 +122,13 @@ EOQ;
 
 	//var_dump($results);
 
-	foreach($results as $r) {
-		$pid = $r['pid']['value'];
-		$title = $r['label']['value'];
+	for($i = 0; $i < count($results); $i++ ) {
+		$pid = $results[$i]['pid']['value'];
+		$title = $results[$i]['label']['value'];
 		$obj_dsid = '/islandora/object/'.$pid.'/datastream/OBJ/view';
 		$obj_title = $title;
 
-		echo $obj_title .' - ' .'<div><img src="'.$obj_dsid.'" alt="'.$obj_title.'" /></div><hr><br>';
+		//echo $obj_title .' - ' .'<div><img src="'.$obj_dsid.'" alt="'.$obj_title.'" /></div><hr><br>';
 	}
 
 }

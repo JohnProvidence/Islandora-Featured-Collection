@@ -1,0 +1,73 @@
+@import 'variables/variables';
+
+.featured_collection_object {
+	.block {
+		h3.title {
+			display: none;
+		}
+	}
+}
+
+.pld_featured_objects__rand_obj__wrapper {
+	background-size: scroll;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-color: #000;
+	height: calc(100vh - 286px);
+	width: 100%;
+	display: flex;
+	flex-flow: column nowrap;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: -1rem;
+	z-index: 1;
+
+	.rand-obj__overlay {
+		@include linear-gradient(45deg, rgba($orange, .3) 10%, rgba(transparent, .6) 80%);
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		display: flex;
+		flex-flow: column nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.rand-obj__info {
+		background: rgba(#fff, .87);
+		padding: 2rem;
+		-webkit-box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
+		-moz-box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
+		box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
+		h3 {
+			font-size: 1.8rem;
+			color: $pink;
+			border-bottom: solid thin $pink;
+			margin-bottom: 1rem;
+		}
+
+		.rand-obj__data {
+			a {
+				color: $orange;
+				font-weight: 700;
+			}
+			&:before {
+				content:"";
+				display:block;
+				clear:both;
+			}
+			&:after {
+				content:"";
+				display:block;
+				clear:both;
+			}
+		}
+
+		.view_obj {
+			@include btn;
+			margin:1rem 0;
+		}
+	}
+}

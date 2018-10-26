@@ -1,6 +1,8 @@
 name = Prov Lib Digital Featured Collection Objects
 dependencies[] = islandora
 description = Displays a random object from a selected collection
+configure = admin/settings/pld-featured-objects
 package = Islandora
 version = 7.x
 core = 7.x
+stylesheets[all][] = css/pld_featured_objects.css

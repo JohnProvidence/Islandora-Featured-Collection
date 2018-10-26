@@ -64,20 +64,33 @@ EOQ;
  		}
  	}
 
+ 	$parent_pids = array();
+
  	foreach($collections as $c) {
 
  		$pid = $c['pid'];
- 		
- 		$parent_object = islandora_object_load($pid);
 
- 		//var_dump($parent_object);
+ 		$parent_pids[] = array(
+ 			$pid,
+ 		);
+ 		
+ 	}
+
+ 	$rand_parent = array_rand($parent_pids);
+
+ 	$parent_pid = $parent_pids[$rand_parent];
+
+ 	//var_dump($parent_pid);
+
+ 	$parent_object = islandora_object_load($parent_pid[0]);
+
 
  		$object_query = <<<EOQ
  			PREFIX fedora: <info:fedora/fedora-system:def/relations-external#>
  			SELECT ?pid ?label 
  			FROM <#ri>
  			WHERE {
- 				?pid fedora:isMemberOfCollection <info:fedora/$pid> ;
+ 				?pid fedora:isMemberOfCollection <info:fedora/$parent_pid[0]> ;
  				<fedora-model:label> ?label ;
  			}
 EOQ;
@@ -138,7 +151,7 @@ EOQ;
 	 			);
  			}			
  		}
- 	}
+ 	
  	$rand = array_rand($objects);
 
  	$items = $objects[$rand];

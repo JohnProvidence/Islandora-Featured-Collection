@@ -12,6 +12,57 @@ function pld_featured_objects_block_info() {
 	return $blocks;
 }
 
+function pld_featured_objects_permission() {
+	return array(
+		'access pld_featured_objects admin' => array(
+			'title' => t('User can add or delete featured collection objects'),
+		),
+	);
+}
+
+function pld_featured_objects_menu() {
+	$items = array();
+	$items['islandora/object/%islandora_object/manage/pld_featured_objects'] = array(
+		'title' => 'Featured Object',
+		'access arguments' => array('access pld_featured_objects admin'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('pld_featured_objects_manage_form'),
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 1,
+	);
+	return $items;
+}
+
+function pld_featured_objects_manage_form() {
+	$form = array();
+	$pid = arg(2);
+	//var_dump($pid);
+	$object = islandora_object_load($pid);
+	//var_dump($object);
+
+	$options = array(
+		$pid => 'No',
+		$pid => 'Yes',
+	);
+
+	$form['pld_featured_objects'] = array(
+		'#type' => 'fieldset',
+		'#title' => 'Feature this object in the featured collections region?',
+	);
+	$form['pld_featured_objects']['selected_object'] = array(
+		'#title' => t('Feature this collection object on the homepage?'),
+		'#type' => 'checkboxes',
+		'#options' => $options,
+		'#default_value' => variable_get('selected_object', 'value'),
+	);
+
+	return system_settings_form($form);
+
+	$sel_pid = variable_get('selected_object', 'value');
+	var_dump($sel_pid);
+}
+
+
 
 function pld_featured_objects_block_view($delta = '') {
 	switch($delta) {
@@ -26,6 +77,9 @@ function pld_featured_objects_block_view($delta = '') {
 
 function pld_featured_objects_items() {
 	$items = array();
+	$selected_pid = variable_get('selected_object', 'value');
+
+	var_dump($selected_pid);
 
 	module_load_include('inc', 'islandora', 'includes/datastream');
   	module_load_include('inc', 'islandora', 'includes/utilities');
@@ -153,10 +207,13 @@ EOQ;
  		}
  	
  	$rand = array_rand($objects);
+ 	
+ 	if(!empty($objects)):
+ 	
+ 		$items = $objects[$rand];
 
- 	$items = $objects[$rand];
-
-	return theme('pld_featured_objects_items', array('items' => $items));
+		return theme('pld_featured_objects_items', array('items' => $items));
+	endif;
 }
 
 function pld_featured_objects_theme() {

@@ -9,7 +9,8 @@
 */
 
 
-$items = $variables['items'];
+$items = $variables['items'][0];
+
 ?>
 <div class="pld_featured_objects__rand_obj__wrapper" style="background-image:url('<?php print $items['view_url']; ?>');">
 	<div class="rand-obj__overlay">

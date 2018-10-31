@@ -1,0 +1,40 @@
+<?php
+/**
+* Install file for pld featured objects module
+*/
+
+// Create database schema and make drupal aware of it
+
+function pld_featured_objects_schema() {
+	$schema['pld_featured_objects'] = array(
+		'fields' => array(
+			'obj_pid' => array(
+				'type' => 'varchar',
+				'length' => 256,
+				'not null' => TRUE,
+				'default' => '',
+			),
+		),
+	);
+	return $schema;
+}
+
+// Create table which was missing in early stages of module development
+
+function pld_featured_objects_update_7101() {
+	$table = array(
+		'description' => 'A table to store selected pids. Pids are pulled and used to get collection objects to display on the homepage.',
+		'fields' => array(
+			'obj_pid' => array(
+				'type' => 'varchar',
+				'length' => 256,
+				'not null' => TRUE,
+				'default' => '',
+			),
+		),
+	);
+
+	db_create_table('pld_featured_objects', $table);
+}
+
+?>

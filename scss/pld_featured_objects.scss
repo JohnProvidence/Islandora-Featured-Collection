@@ -37,7 +37,11 @@
 
 	.rand-obj__info {
 		background: rgba(#fff, .87);
-		padding: 2rem;
+		padding: 1rem 2rem;
+		position: absolute;
+		bottom: 1rem;
+		left:1rem;
+
 		-webkit-box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
 		-moz-box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
 		box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
@@ -68,6 +72,7 @@
 		.view_obj {
 			@include btn;
 			margin:1rem 0;
+			max-width: 150px;
 		}
 	}
 }

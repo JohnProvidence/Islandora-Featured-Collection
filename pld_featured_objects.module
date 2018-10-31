@@ -33,33 +33,61 @@ function pld_featured_objects_menu() {
 	return $items;
 }
 
-function pld_featured_objects_manage_form() {
+function pld_featured_objects_manage_form($form, &$form_state) {
+
+
 	$form = array();
 	$pid = arg(2);
-	//var_dump($pid);
-	$object = islandora_object_load($pid);
-	//var_dump($object);
+	
+	$result = db_query("select * from {pld_featured_objects} where obj_pid = :pid", array(':pid' => $pid))->fetchAll();
 
-	$options = array(
-		$pid => 'No',
-		$pid => 'Yes',
-	);
+	
+
 
 	$form['pld_featured_objects'] = array(
 		'#type' => 'fieldset',
 		'#title' => 'Feature this object in the featured collections region?',
 	);
-	$form['pld_featured_objects']['selected_object'] = array(
-		'#title' => t('Feature this collection object on the homepage?'),
-		'#type' => 'checkboxes',
-		'#options' => $options,
-		'#default_value' => variable_get('selected_object', 'value'),
+	
+	if(count($result) <= 0):
+		$form['pld_featured_objects']['selected_object'] = array(
+			'#title' => t('Feature this collection object on the homepage?'),
+			'#type' => 'checkbox',
+		);
+	endif;
+
+	if(count($result) > 0):
+		$form['pld_featured_objects']['remove_object'] = array(
+			'#title' => t('Remove this object from the featured objects display?'),
+			'#type' => 'checkbox',
+		);
+	endif;
+
+	$form['pld_featured_objects']['pid_num'] = array(
+		'#type' => 'hidden',
+		'#value' => $pid,
+	);
+	$form['pld_featured_objects']['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Submit'),
 	);
 
-	return system_settings_form($form);
+	return $form;
+}
 
-	$sel_pid = variable_get('selected_object', 'value');
-	var_dump($sel_pid);
+function pld_featured_objects_manage_form_submit($form_id, $form_state) {
+	var_dump($form_state['values']);
+		
+	if(isset($form_state['values']['selected_object'])) {
+		db_insert('pld_featured_objects')->fields(array(
+			'obj_pid' => $form_state['values']['pid_num'],
+		))->execute();
+		drupal_set_message('The object '. $form_state['values']['pid_num'] .' has been successfully submitted.');
+	}
+	if(isset($form_state['values']['remove_object'])) {
+		db_delete('pld_featured_objects')->condition('obj_pid', $form_state['values']['pid_num'])->execute();
+		drupal_set_message('The object '. $form_state['values']['pid_num'] .' has been removed from the featured objects display.');
+	}
 }
 
 
@@ -76,142 +104,66 @@ function pld_featured_objects_block_view($delta = '') {
 } 
 
 function pld_featured_objects_items() {
-	$items = array();
-	$selected_pid = variable_get('selected_object', 'value');
-
-	var_dump($selected_pid);
 
 	module_load_include('inc', 'islandora', 'includes/datastream');
   	module_load_include('inc', 'islandora', 'includes/utilities');
  	module_load_include('inc', 'islandora', 'includes/metadata');
 
- 	$user = user_load(1);
+	$items = array();
 
- 	$connection = islandora_get_tuque_connection($user);
+	// query db to get selected pids
+	$result = db_query("select * from {pld_featured_objects}", array())->fetchAll();
 
- 	$repository = $connection->repository;
+	$rand_index = array_rand($result);
 
- 	$ri = $repository->ri;
+	$pid = $result[$rand_index];
 
- 	$collections = array();
- 	$objects = array();
+	$pid = $pid->obj_pid;
 
- 	$cmodel = 'islandora:collectionCModel';
+	$object = islandora_object_load($pid);
 
- 	$query = <<<EOQ
- 	SELECT ?pid ?label
- 	FROM <#ri>
- 	WHERE {
- 		?pid <fedora-model:label> ?label ;
- 		<fedora-model:hasModel> <info:fedora/$cmodel>
- 	}
-EOQ;
+	$object_label = $object->label;
 
- 	$results = $ri->sparqlQuery($query);
- 	foreach($results as $r) {
- 		$pid = $r['pid']['value'];
- 		$label = $r['label']['value'];
- 		if($pid != 'islandora:root') {
- 			$collections[] = array(
- 				'pid' => $pid,
- 			);
- 		}
- 	}
+	$parent = $object->getParents();
+	$parent_pid = $parent[0];
+	$parent = islandora_object_load($parent[0]);
+	$parent_label = $parent->label;
+	$parent_url = '/islandora/object/'.$parent_pid;
+	$object_url = '/islandora/object/'.$pid;
+	$obj_models = $object->relationships->get('info:fedora/fedora-system:def/model#', 'hasModel');
+	$obj_models = $obj_models[0]['object']['value'];
+	$copyright = $object->getDatastream('COPYRIGHT-RESTRICTION');
 
- 	$parent_pids = array();
+	if($obj_models == 'islandora:sp_basic_image') {
+	 	$obj_dsid = $object->getDatastream('OBJ');
+	 	if($obj_dsid != FALSE) {
+	 		$view_url = '/islandora/object/'.$pid.'/datastream/OBJ/view';
+	 	}
+	 }
+	if($obj_models == 'islandora:compoundCModel') {
+		$parts = islandora_compound_object_get_parts($pid);
+			if($parts) {
+	 			$first_child = $parts[0];
+	 			$object = islandora_object_load($first_child);
+	 			$obj_dsid = $object->getDatastream('OBJ');
+	 			$copyright = $object->getDatastream('COPYRIGHT-RESTRICTION');
+		 		if($obj_dsid != FALSE) {
+		 			$view_url = '/islandora/object/'.$first_child.'/datastream/OBJ/view';
+		 			}
+	 		}	
+	}
 
- 	foreach($collections as $c) {
-
- 		$pid = $c['pid'];
-
- 		$parent_pids[] = array(
- 			$pid,
- 		);
- 		
- 	}
-
- 	$rand_parent = array_rand($parent_pids);
-
- 	$parent_pid = $parent_pids[$rand_parent];
-
- 	//var_dump($parent_pid);
-
- 	$parent_object = islandora_object_load($parent_pid[0]);
-
-
- 		$object_query = <<<EOQ
- 			PREFIX fedora: <info:fedora/fedora-system:def/relations-external#>
- 			SELECT ?pid ?label 
- 			FROM <#ri>
- 			WHERE {
- 				?pid fedora:isMemberOfCollection <info:fedora/$parent_pid[0]> ;
- 				<fedora-model:label> ?label ;
- 			}
-EOQ;
-
- 		$object_results = $ri->sparqlQuery($object_query);
-
- 		foreach($object_results as $obj) {
- 			$obj_pid = $obj['pid']['value'];
- 			$obj_label = $obj['label']['value'];
- 			$view_url = '';		
- 			$obj_data = islandora_object_load($obj_pid);
- 			$copyright = $obj_data->getDatastream('COPYRIGHT-RESTRICTION');
-
- 			if($copyright) {
- 				continue;
- 			} else {
-	 			$parent = $obj_data->getParents();
-	 			$parent_pid = $parent[0];
-	 			$parent_object = islandora_object_load($parent_pid);
-	 			$parent_label = $parent_object->label;
-	 			$parent_url = '/islandora/object/'.$parent_pid;
-	 			$obj_url = '/islandora/object/'.$obj_pid;
-	 			$obj_models = $obj_data->relationships->get('info:fedora/fedora-system:def/model#', 'hasModel');
-	 			$copyright = $obj_data->getDatastream('COPYRIGHT-RESTRICTION');
-	 			
-	 			$obj_models = $obj_models[0]['object']['value'];
-	 			
-	 			if($obj_models == 'islandora:sp_basic_image') {
-	 				$obj_dsid = $obj_data->getDatastream('OBJ');
-	 				if($obj_dsid != FALSE) {
-	 					$view_url = '/islandora/object/'.$obj_pid.'/datastream/OBJ/view';
-	 				}
-	 			}
-
-	 			if($obj_models == 'islandora:compoundCModel') {
-
-	 				$parts = islandora_compound_object_get_parts($obj_pid);
-
-	 				if($parts) {
-	 					$first_child = $parts[0];
-	 					$object = islandora_object_load($first_child);
-	 					$obj_dsid = $object->getDatastream('OBJ');
-	 					$copyright = $object->getDatastream('COPYRIGHT-RESTRICTION');
-	 					if($obj_dsid != FALSE) {
-	 						$view_url = '/islandora/object/'.$first_child.'/datastream/OBJ/view';
-	 					}
-	 				}	
-	 			}
-
-	 			$objects[] = array(
-	 				'obj_pid' => $obj_pid,
-	 				'obj_label' => $obj_label,
-	 				'obj_url' => $obj_url,
-	 				'parent_label' => $parent_label,
-	 				'parent_pid' => $parent_pid,
-	 				'parent_url' => $parent_url,
-	 				'view_url' => $view_url,
-	 			);
- 			}			
- 		}
- 	
- 	$rand = array_rand($objects);
- 	
- 	if(!empty($objects)):
- 	
- 		$items = $objects[$rand];
-
+	$items[] = array(
+		'obj_pid' => $pid,
+	 	'obj_label' => $object_label,
+	 	'obj_url' => $object_url,
+	 	'parent_label' => $parent_label,
+	 	'parent_pid' => $parent_pid,
+	 	'parent_url' => $parent_url,
+	 	'view_url' => $view_url,
+	);
+	
+	if(!empty($items)):
 		return theme('pld_featured_objects_items', array('items' => $items));
 	endif;
 }

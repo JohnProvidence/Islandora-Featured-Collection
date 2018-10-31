@@ -23,5 +23,13 @@ $items = $variables['items'][0];
 				<a href="<?php print $items['obj_url']; ?>">View This Item</a>
 			</div>
 		</div>
+		<div class="view-all-collections">
+			View All Collections
+			<div class="dwn-caret">
+				<i class="fas fa-caret-down" aria-hidden="true"></i>
+			</div>
+		</div>
 	</div>
+
+	
 </div>

@@ -15,12 +15,36 @@
 	background-color: #000;
 	height: calc(100vh - 286px);
 	width: 100%;
-	display: flex;
-	flex-flow: column nowrap;
-	justify-content: center;
-	align-items: center;
 	margin-bottom: -1rem;
 	z-index: 1;
+
+	.view-all-collections {
+		color: #fff;
+		font-size: 1.2rem;
+		position: absolute;
+		bottom: .5rem;
+		transition: all .3s ease-in-out;
+		cursor: pointer;
+		&:hover {
+			color: $seafoam;
+
+			.dwn-caret {
+				border: solid thin $seafoam;
+			}
+		}
+
+		.dwn-caret {
+			width: 60px;
+			height: 60px;
+			border: solid thin #fff;
+			border-radius: 50%;
+			text-align: center;
+			padding-top: .25rem;
+			font-size: 3rem;
+			margin: .5rem auto;
+			transition: all .3s ease-in-out;
+		}
+	}
 
 	.rand-obj__overlay {
 		@include linear-gradient(45deg, rgba($orange, .3) 10%, rgba(transparent, .6) 80%);
@@ -36,26 +60,29 @@
 	}
 
 	.rand-obj__info {
-		background: rgba(#fff, .87);
+		background: rgba(#000, .67);
 		padding: 1rem 2rem;
 		position: absolute;
-		bottom: 1rem;
+		top: 75%;
 		left:1rem;
+		border-radius: 10px;
 
-		-webkit-box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
-		-moz-box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
-		box-shadow: 0px 10px 7px -6px rgba(0,0,0,0.67);
 		h3 {
 			font-size: 1.8rem;
-			color: $pink;
-			border-bottom: solid thin $pink;
+			color: #fff;
+			border-bottom: solid thin #fff;
 			margin-bottom: 1rem;
 		}
 
 		.rand-obj__data {
+			font-size: 1.2rem;
+			color: $orange;
 			a {
-				color: $orange;
+				color: #fff;
 				font-weight: 700;
+				text-transform: capitalize;
+				display: inline-block;
+				margin-left: .5rem;
 			}
 			&:before {
 				content:"";

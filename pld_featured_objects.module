@@ -35,14 +35,10 @@ function pld_featured_objects_menu() {
 
 function pld_featured_objects_manage_form($form, &$form_state) {
 
-
 	$form = array();
 	$pid = arg(2);
 	
 	$result = db_query("select * from {pld_featured_objects} where obj_pid = :pid", array(':pid' => $pid))->fetchAll();
-
-	
-
 
 	$form['pld_featured_objects'] = array(
 		'#type' => 'fieldset',
@@ -114,54 +110,56 @@ function pld_featured_objects_items() {
 	// query db to get selected pids
 	$result = db_query("select * from {pld_featured_objects}", array())->fetchAll();
 
-	$rand_index = array_rand($result);
+	if(count($result) > 0): // make sure we actually have pids in the db we can use to build our items array
+		$rand_index = array_rand($result);
 
-	$pid = $result[$rand_index];
+		$pid = $result[$rand_index];
 
-	$pid = $pid->obj_pid;
+		$pid = $pid->obj_pid;
 
-	$object = islandora_object_load($pid);
+		$object = islandora_object_load($pid);
 
-	$object_label = $object->label;
+		$object_label = $object->label;
 
-	$parent = $object->getParents();
-	$parent_pid = $parent[0];
-	$parent = islandora_object_load($parent[0]);
-	$parent_label = $parent->label;
-	$parent_url = '/islandora/object/'.$parent_pid;
-	$object_url = '/islandora/object/'.$pid;
-	$obj_models = $object->relationships->get('info:fedora/fedora-system:def/model#', 'hasModel');
-	$obj_models = $obj_models[0]['object']['value'];
-	$copyright = $object->getDatastream('COPYRIGHT-RESTRICTION');
+		$parent = $object->getParents();
+		$parent_pid = $parent[0];
+		$parent = islandora_object_load($parent[0]);
+		$parent_label = $parent->label;
+		$parent_url = '/islandora/object/'.$parent_pid;
+		$object_url = '/islandora/object/'.$pid;
+		$obj_models = $object->relationships->get('info:fedora/fedora-system:def/model#', 'hasModel');
+		$obj_models = $obj_models[0]['object']['value'];
+		$copyright = $object->getDatastream('COPYRIGHT-RESTRICTION');
 
-	if($obj_models == 'islandora:sp_basic_image') {
-	 	$obj_dsid = $object->getDatastream('OBJ');
-	 	if($obj_dsid != FALSE) {
-	 		$view_url = '/islandora/object/'.$pid.'/datastream/OBJ/view';
-	 	}
-	 }
-	if($obj_models == 'islandora:compoundCModel') {
-		$parts = islandora_compound_object_get_parts($pid);
-			if($parts) {
-	 			$first_child = $parts[0];
-	 			$object = islandora_object_load($first_child);
-	 			$obj_dsid = $object->getDatastream('OBJ');
-	 			$copyright = $object->getDatastream('COPYRIGHT-RESTRICTION');
-		 		if($obj_dsid != FALSE) {
-		 			$view_url = '/islandora/object/'.$first_child.'/datastream/OBJ/view';
-		 			}
-	 		}	
-	}
+		if($obj_models == 'islandora:sp_basic_image') {
+		 	$obj_dsid = $object->getDatastream('OBJ');
+		 	if($obj_dsid != FALSE) {
+		 		$view_url = '/islandora/object/'.$pid.'/datastream/OBJ/view';
+		 	}
+		 }
+		if($obj_models == 'islandora:compoundCModel') {
+			$parts = islandora_compound_object_get_parts($pid);
+				if($parts) {
+		 			$first_child = $parts[0];
+		 			$object = islandora_object_load($first_child);
+		 			$obj_dsid = $object->getDatastream('OBJ');
+		 			$copyright = $object->getDatastream('COPYRIGHT-RESTRICTION');
+			 		if($obj_dsid != FALSE) {
+			 			$view_url = '/islandora/object/'.$first_child.'/datastream/OBJ/view';
+			 			}
+		 		}	
+		}
 
-	$items[] = array(
-		'obj_pid' => $pid,
-	 	'obj_label' => $object_label,
-	 	'obj_url' => $object_url,
-	 	'parent_label' => $parent_label,
-	 	'parent_pid' => $parent_pid,
-	 	'parent_url' => $parent_url,
-	 	'view_url' => $view_url,
-	);
+		$items[] = array(
+			'obj_pid' => $pid,
+		 	'obj_label' => $object_label,
+		 	'obj_url' => $object_url,
+		 	'parent_label' => $parent_label,
+		 	'parent_pid' => $parent_pid,
+		 	'parent_url' => $parent_url,
+		 	'view_url' => $view_url,
+		);
+	endif;
 	
 	if(!empty($items)):
 		return theme('pld_featured_objects_items', array('items' => $items));

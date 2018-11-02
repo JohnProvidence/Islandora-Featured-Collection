@@ -20,7 +20,7 @@ $items = $variables['items'][0];
 				<span class="parent_collection">In collection: <a href="<?php print $items['parent_url']; ?>"><?php print $items['parent_label']; ?></a></span>
 			</div>
 			<div class="view_obj btn">
-				<a href="<?php print $items['obj_url']; ?>">View This Item</a>
+				<a href="<?php print $items['obj_url']; ?>">View This Item <i class="fas fa-angle-right"></i></a>
 			</div>
 		</div>
 		<div class="view-all-collections">

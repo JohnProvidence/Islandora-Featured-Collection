@@ -13,7 +13,7 @@
 	background-position: center center;
 	background-repeat: no-repeat;
 	background-color: #000;
-	height: calc(100vh - 286px);
+	height: 85vh;
 	width: 100%;
 	margin-bottom: -1rem;
 	z-index: 1;
@@ -63,12 +63,12 @@
 		background: rgba(#000, .67);
 		padding: 1rem 2rem;
 		position: absolute;
-		top: 75%;
-		left:1rem;
+		top: 55%;
+		left:.5rem;
 		border-radius: 10px;
 
 		h3 {
-			font-size: 1.8rem;
+			font-size: 1.5rem;
 			color: #fff;
 			border-bottom: solid thin #fff;
 			margin-bottom: 1rem;
@@ -100,6 +100,10 @@
 			@include btn;
 			margin:1rem 0;
 			max-width: 150px;
+
+			svg.svg-inline--fa {
+				margin-top: 5px;
+			}
 		}
 	}
 }

@@ -44,6 +44,21 @@
 			margin: .5rem auto;
 			transition: all .3s ease-in-out;
 		}
+
+		@include tablet-landscape() {
+			font-size: 1rem;
+
+			.dwn-caret {
+				width: 40px;
+				height: 40px;
+				font-size: 2rem;
+				padding-top: .15rem;
+			}
+		}
+
+		@include mobile() {
+			display: none;
+		}
 	}
 
 	.rand-obj__overlay {
@@ -67,22 +82,51 @@
 		left:.5rem;
 		border-radius: 10px;
 
+		@include tablet-landscape() {
+			
+			width: 100%;
+			border-radius: 0px;
+			bottom: 0;
+			left: 0;
+		}
+
+		@include tablet-portrait() {
+			top: 75%;
+		}
+
+		@include mobile() {
+			top: 60%;
+			padding: 1rem;
+		}
+
 		h3 {
 			font-size: 1.5rem;
 			color: #fff;
 			border-bottom: solid thin #fff;
 			margin-bottom: 1rem;
+
+			@include mobile() {
+				font-size: 1.2rem;
+			}
 		}
 
 		.rand-obj__data {
 			font-size: 1.2rem;
 			color: $orange;
+
+			@include mobile() {
+				font-size: 1rem;
+			}
 			a {
 				color: #fff;
 				font-weight: 700;
 				text-transform: capitalize;
 				display: inline-block;
 				margin-left: .5rem;
+
+				@include mobile() {
+					margin-left: 0;
+				}
 			}
 			&:before {
 				content:"";
@@ -98,7 +142,7 @@
 
 		.view_obj {
 			@include btn;
-			margin:1rem 0;
+			margin: 1rem 0;
 			max-width: 150px;
 
 			svg.svg-inline--fa {
